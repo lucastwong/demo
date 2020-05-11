@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style>
+      html,
+      body {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      h1 {
+        position: sticky;
+        top: 15%;
+      }
+
+      #renderCanvas {
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+      }
+
+    </style>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+    <script src="https://code.jquery.com/pep/0.4.3/pep.min.js"></script>
+    <script src="https://unpkg.com/vexflow/releases/vexflow-min.js"></script>
+  </head>
+  <h1 id="boo"></h1>
+
+  <body>
+    <canvas id="renderCanvas" touch-action="none"></canvas>
+    <script>
+      var VF = Vex.Flow;
+      var rh = ['a/4'];
+      var lh = ['a/3'];
+      function drawchord() {
+        document.getElementById("boo").innerHTML = "";
+        var div = document.getElementById("boo");
+        var renderer = new VF.Renderer(div, VF.Renderer.Backends.SVG);
+        renderer.resize(1000, 300);
+        var context = renderer.getContext();
+        context.attributes.fill = "gold";
+        context.attributes.stroke = "gold";
+var voice1, voice2;
+        var stave1 = new VF.Stave(10, 0, 1000);
+        stave1.addClef("treble");
+        stave1.options.fill_style = "gold";
+        stave1.setContext(context).draw();
+        if (rh.length > 0) {
+          var acci = [];
+          for (var i = 0; i < rh.length; i++) {
+            if (rh[i].includes("#")) {
+              acci[i] = "#";
+            }
+            if (rh[i].includes("b")) {
+              acci[i] = "b";
+            }
+            if (rh[i].includes("X")) {
+              acci[i] = "##";
+            }
+            if (rh[i].includes("-")) {
+              acci[i] = "bb";
+            }
+            if (!rh[i].includes("#") && !rh[i].includes("b") && !rh[i].includes("X") && !rh[i].includes("-")) {
+              acci[i] = "";
+            }
+          }
+          var notes1 = [
+            new VF.StaveNote({
+              clef: "treble",
+              keys: rh,
+              duration: "w"
+            })
+          ];
+          for (i = 0; i < acci.length; i++) {
+            if (acci[i] !== "") {
+              notes1[0].addAccidental(i, new VF.Accidental(acci[i]));
+            }
+            notes1[0].setKeyStyle(i, { shadowBlur: 15, shadowColor: 'gold', fillStyle: 'gold' })
+          }
+          voice1 = new VF.Voice({
+            num_beats: 4,
+            beat_value: 4
+          });
+          voice1.addTickables(notes1);
+        }
+        var stave2 = new VF.Stave(10, 80, 1000);
+        stave2.addClef("bass");
+        stave2.options.fill_style = "gold";
+        stave2.setContext(context).draw();
+        if (lh.length > 0) {
+          var acci = [];
+          for (var i = 0; i < lh.length; i++) {
+            if (lh[i].includes("#")) {
+              acci[i] = "#";
+            }
+            if (lh[i].includes("b")) {
+              acci[i] = "b";
+            }
+            if (lh[i].includes("X")) {
+              acci[i] = "##";
+            }
+            if (lh[i].includes("-")) {
+              acci[i] = "bb";
+            }
+            if (!lh[i].includes("#") && !lh[i].includes("b") && !lh[i].includes("X") && !lh[i].includes("-")) {
+              acci[i] = "";
+            }
+          }
+          var notes2 = [
+            new VF.StaveNote({
+              clef: "bass",
+              keys: lh,
+              duration: "w"
+            })
+          ];
+          for (i = 0; i < acci.length; i++) {
+            if (acci[i] !== "") {
+              notes2[0].addAccidental(i, new VF.Accidental(acci[i]));
+            }
+            notes2[0].setKeyStyle(i, { shadowBlur: 15, shadowColor: 'gold', fillStyle: 'gold' })
+          }
+          voice2 = new VF.Voice({
+            num_beats: 4,
+            beat_value: 4
+          });
+          voice2.addTickables(notes2);
+        }
+        if (rh.length > 0 && lh.length > 0) {
+          var formatter = new VF.Formatter().joinVoices([voice1]).joinVoices([voice2]).format([voice1, voice2], 100);
+            voice1.draw(context, stave1);
+           voice2.draw(context, stave2);} else {
+            if (rh.length > 0 && lh.length === 0)  {
+          var formatter = new VF.Formatter().joinVoices([voice1]).format([voice1], 100);
+            voice1.draw(context, stave1); } else  {
+            if (lh.length > 0 && rh.length === 0) {
+          var formatter = new VF.Formatter().joinVoices([voice2]).format([voice2], 100);
+            voice2.draw(context, stave2); } }  }
+            var connector = new VF.StaveConnector(stave1, stave2);
+      var line = new VF.StaveConnector(stave1, stave2);
+      connector.setType(VF.StaveConnector.type.BRACE);
+      connector.setContext(context);
+      line.setType(VF.StaveConnector.type.SINGLE);
+      connector.setContext(context);
+      line.setContext(context);  
+      connector.draw();
+      line.draw();
+      }
+      var canvas = document.getElementById("renderCanvas");
+      var engine = new BABYLON.Engine(canvas, true);
+      var createScene = function() {
+        var scene = new BABYLON.Scene(engine);
+        scene.clearColor = new BABYLON.Color3(0, 0, 0);
+        var camera = new BABYLON.UniversalCamera("UniversalCamera", new BABYLON.Vector3(0, 0, -10), scene);
+        camera.setTarget(BABYLON.Vector3.Zero());
+        var skybox = BABYLON.Mesh.CreateBox("skyBox", 100.0, scene);
+        var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+        skyboxMaterial.backFaceCulling = false;
+        var skyboxaddress = ["https://raw.githubusercontent.com/BabylonJS/Babylon.js/master/Playground/textures/TropicalSunnyDay"];
+        skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture(skyboxaddress[Math.floor(Math.random() * skyboxaddress.length)], scene);
+        skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+        skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+        skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+        skyboxMaterial.disableLighting = true;
+        skybox.material = skyboxMaterial;
+        drawchord();
+        return scene;
+      }
+      var scene = createScene();
+      engine.runRenderLoop(function() {
+        scene.render();
+      });
+      window.addEventListener("resize", function() {
+        engine.resize();
+      });
+
+    </script>
+  </body>
+
+</html>
